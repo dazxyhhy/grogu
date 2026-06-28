@@ -66,23 +66,26 @@ function App() {
       {/* 전체 컨트롤 대시보드 컨테이너 */}
       <div className="relative z-10 flex flex-col items-center border border-emerald-500/20 bg-slate-900/40 backdrop-blur-md p-8 md:p-12 rounded-3xl shadow-2xl shadow-emerald-950/20 max-w-md w-full mx-4">
         {/* 상단 뱃지 라인 */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 mb-3">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
           <span className="text-s font-mono tracking-[0.3em] text-emerald-400 uppercase font-semibold">Grogu Study</span>
         </div>
 
-        <GroguIcon isRunning={isRunning} />
+        {/* 그로구를 타이머보다 위에 띄우고 하단 여백을 대폭 줄임 */}
+        <div className="relative z-20 -mb-1">
+          <GroguIcon isRunning={isRunning} />
+        </div>
 
-        {/* 타이머 메인 디스플레이 패널 */}
-        <div className="w-full bg-slate-950/80 border border-stone-800 rounded-2xl py-6 px-4 text-center shadow-inner relative group">
+        {/* 음수 마진(-mt-7)을 주어 타이머 패널을 그로구 밑으로 슬쩍 겹치게 밀어 올림 */}
+        <div className="w-full bg-slate-950/80 border border-stone-800 rounded-2xl py-6 px-4 text-center shadow-inner relative group z-10 -mt-21">
           {/* 모서리 SF 데코 라인 */}
           <div className="absolute top-0 left-4 w-4 h-px bg-emerald-400/40" />
           <div className="absolute bottom-0 right-4 w-4 h-px bg-emerald-400/40" />
 
-          <h1 className="text-5xl font-mono font-bold tracking-normal text-emerald-400 tabular-nums drop-shadow-[0_0_12px_rgba(52,211,153,0.3)] md:text-6xl">{formatTime(time)}</h1>
+          <h1 className="pt-2 text-5xl font-mono font-bold tracking-normal text-emerald-400 tabular-nums drop-shadow-[0_0_12px_rgba(52,211,153,0.3)] md:text-6xl">{formatTime(time)}</h1>
         </div>
 
-        <p className="mt-4 text-xl font-mono text-stone-400 tracking-wide text-center">This is the way.</p>
+        <p className="mt-8 mb-4 text-xl font-mono text-stone-400 tracking-wide text-center">This is the way.</p>
 
         {/* 제어 버튼 세트 (그로구 로브 색상 계열 적용) */}
         <div className="mt-8 flex gap-4 w-full">
