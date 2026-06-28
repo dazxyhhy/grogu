@@ -7,10 +7,12 @@ function App() {
   const [isCompleted, setIsCompleted] = useState<boolean>(false)
   const [targetMinutes, setTargetMinutes] = useState<number>(10)
   const timerRef = useRef<number | null>(null)
+  // 다른 탭에 갔을 때의 오차를 계산하기 위한 실제 시각(Timestamp) 레프 추가
+  const startTimeRef = useRef<number | null>(null)
 
   const targetTimeMs = targetMinutes * 60 * 1000
 
-  // 1. 켜질 때 로컬스토리지에서 이전 상태 복구
+  // 1. 로컬스토리지에서 이전 상태 복구
   useEffect(() => {
     const savedTime = localStorage.getItem("stopwatch_time")
     const savedTarget = localStorage.getItem("stopwatch_targetMinutes")
@@ -23,31 +25,37 @@ function App() {
     if (savedIsRunning === "true" && savedIsCompleted !== "true") setIsRunning(true)
   }, [])
 
-  // 2. 타이머 핵심 로직
+  // 2. 타이머 핵심 로직: 오차 계산 동기화 시스템 도입
   useEffect(() => {
     if (isRunning) {
+      // 타이머가 작동 시작하는 "진짜 현실 시각" 낙인 찍기
+      startTimeRef.current = Date.now() - time
+
       timerRef.current = window.setInterval(() => {
-        setTime((prevTime) => {
-          const nextTime = prevTime + 10
+        // 단순히 +10을 더하는 대신, 처음 켠 시각과 현재 시각의 차이를 구함 (탭이 멈춰도 오차 없음!)
+        const actualElapsedTime = Date.now() - (startTimeRef.current ?? Date.now())
+        // 10ms 단위 렌더링을 위해 끝자리 살짝 가공
+        const nextTime = Math.floor(actualElapsedTime / 10) * 10
 
-          // 🎉 목표 시간 도달 완료 시점 발생
-          if (nextTime >= targetTimeMs) {
-            setIsRunning(false)
-            setIsCompleted(true) // 완료 상태로 전환
-            localStorage.setItem("stopwatch_time", targetTimeMs.toString())
-            localStorage.setItem("stopwatch_isCompleted", "true")
-            return targetTimeMs
-          }
+        if (nextTime >= targetTimeMs) {
+          setIsRunning(false)
+          setIsCompleted(true)
+          setTime(targetTimeMs)
+          localStorage.setItem("stopwatch_time", targetTimeMs.toString())
+          localStorage.setItem("stopwatch_isCompleted", "true")
+          if (timerRef.current) clearInterval(timerRef.current)
+          return
+        }
 
-          localStorage.setItem("stopwatch_time", nextTime.toString())
-          return nextTime
-        })
+        setTime(nextTime)
+        localStorage.setItem("stopwatch_time", nextTime.toString())
       }, 10)
     } else {
       if (timerRef.current) {
         clearInterval(timerRef.current)
         timerRef.current = null
       }
+      startTimeRef.current = null
     }
 
     localStorage.setItem("stopwatch_isRunning", isRunning.toString())
@@ -71,6 +79,7 @@ function App() {
     setIsRunning(false)
     setIsCompleted(false)
     setTime(0)
+    startTimeRef.current = null
     localStorage.removeItem("stopwatch_time")
     localStorage.removeItem("stopwatch_isRunning")
     localStorage.removeItem("stopwatch_isCompleted")
